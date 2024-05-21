@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const UserSchema = new mongoose.Schema({
     user_id: {
         type: mongoose.Schema.Types.ObjectId,
-        default: mongoose.Types.ObjectId,
+        default: () => new mongoose.Types.ObjectId(),
         unique: true,
         required: true,
         index: true,
