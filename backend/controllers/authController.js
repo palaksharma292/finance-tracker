@@ -1,4 +1,3 @@
-// backend/controllers/authController.js
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
@@ -11,7 +10,7 @@ const generateToken = (id) => {
 
 // Register a new user
 exports.registerUser = async (req, res) => {
-    const { name, email, phone, password } = req.body;
+    const { name, email, password } = req.body;
 
     try {
         const userExists = await User.findOne({ email });
@@ -23,7 +22,6 @@ exports.registerUser = async (req, res) => {
         const user = await User.create({
             name,
             email,
-            phone,
             password,
         });
 
@@ -32,14 +30,14 @@ exports.registerUser = async (req, res) => {
                 _id: user._id,
                 name: user.name,
                 email: user.email,
-                phone: user.phone,
                 token: generateToken(user._id),
             });
         } else {
             res.status(400).json({ message: 'Invalid user data' });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error during registration:', error.message);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
 };
 
@@ -55,50 +53,46 @@ exports.loginUser = async (req, res) => {
                 _id: user._id,
                 name: user.name,
                 email: user.email,
-                phone: user.phone,
                 token: generateToken(user._id),
             });
         } else {
             res.status(401).json({ message: 'Invalid email or password' });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error during login:', error.message);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
 };
 
 // Get user profile
 exports.getUserProfile = async (req, res) => {
-    const user = await User.findById(req.user.id);
+    try {
+        const user = await User.findById(req.user.id);
 
-    if (user) {
-        res.json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-        });
-    } else {
-        res.status(404).json({ message: 'User not found' });
+        if (user) {
+            res.json({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+            });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error('Error fetching user profile:', error.message);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
 };
 
-//Logout User
+// Logout user (assuming tokens are not stored in the user model)
 exports.logout = async (req, res) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '');
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        const user = await User.findOneAndUpdate(
-            { _id: decoded._id },
-            { $pull: { tokens: { token } } }
-        );
-
-        if (!user) {
-            return res.status(404).send({ error: 'User not found' });
-        }
-
+        // Simply send a success message, as token invalidation logic depends on your token management strategy
         res.send({ message: 'Logged out successfully' });
     } catch (error) {
-        res.status(500).send({ error: 'Failed to log out' });
+        console.error('Error during logout:', error.message);
+        res.status(500).send({ message: 'Failed to log out', error: error.message });
     }
 };

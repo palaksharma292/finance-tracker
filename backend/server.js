@@ -1,6 +1,7 @@
 // backend/server.js
 const express = require('express');
 const dotenv = require('dotenv');
+const cors = require('cors');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
 const regularAccountRoutes = require('./routes/regularAccount');
@@ -17,6 +18,7 @@ connectDB();
 const app = express();
 
 // Middleware to parse JSON requests
+app.use(cors());
 app.use(express.json());
 
 // Define routes

@@ -1,4 +1,3 @@
-// backend/models/User.js
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
@@ -19,16 +18,13 @@ const UserSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
-    phone: {
-        type: String,
-        unique: true,
-    },
     password: {
         type: String,
         required: true,
     },
 });
 
+// Middleware to hash the password before saving the user
 UserSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
         return next();
@@ -38,6 +34,7 @@ UserSchema.pre('save', async function (next) {
     next();
 });
 
+// Method to check if the entered password matches the hashed password
 UserSchema.methods.matchPassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
