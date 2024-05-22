@@ -81,3 +81,24 @@ exports.getUserProfile = async (req, res) => {
         res.status(404).json({ message: 'User not found' });
     }
 };
+
+//Logout User
+exports.logout = async (req, res) => {
+    try {
+        const token = req.header('Authorization').replace('Bearer ', '');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        const user = await User.findOneAndUpdate(
+            { _id: decoded._id },
+            { $pull: { tokens: { token } } }
+        );
+
+        if (!user) {
+            return res.status(404).send({ error: 'User not found' });
+        }
+
+        res.send({ message: 'Logged out successfully' });
+    } catch (error) {
+        res.status(500).send({ error: 'Failed to log out' });
+    }
+};
